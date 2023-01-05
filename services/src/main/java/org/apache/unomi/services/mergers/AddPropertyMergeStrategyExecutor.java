@@ -17,16 +17,34 @@
 
 package org.apache.unomi.services.mergers;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.unomi.api.Profile;
 import org.apache.unomi.api.PropertyMergeStrategyExecutor;
 import org.apache.unomi.api.PropertyType;
+import org.apache.unomi.persistence.spi.PropertyHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyExecutor {
+    private static final Logger logger = LoggerFactory.getLogger(AddPropertyMergeStrategyExecutor.class.getName());
+
     public boolean mergeProperty(String propertyName, PropertyType propertyType, List<Profile> profilesToMerge, Profile targetProfile) {
-        Object targetPropertyValue = targetProfile.getProperty(propertyName);
+        logger.debug("--ST-- propertyName: " + propertyName);
+        logger.debug("--ST-- propertyType: " + propertyType);
+        logger.debug("--ST-- profilesToMerge: " + profilesToMerge);
+        logger.debug("--ST-- targetProfile: " + targetProfile);
+
+        Object targetPropertyValue = targetProfile.getNestedProperty(propertyName);
+        if (targetPropertyValue == null)
+            targetPropertyValue = targetProfile.getNestedProperty("properties." + propertyName);
+
         Object result = targetPropertyValue;
+        Map<String, Object> properties = targetProfile.getProperties();
+        logger.debug("--ST-- result: " + result);
+
         if (result == null) {
             if (propertyType.getValueTypeId() != null) {
                 if (propertyType.getValueTypeId().equals("integer")) {
@@ -47,7 +65,11 @@ public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyEx
 
         for (Profile profileToMerge : profilesToMerge) {
 
-            Object property = profileToMerge.getProperty(propertyName);
+            Object property = profileToMerge.getNestedProperty(propertyName);
+            if (targetPropertyValue == null)
+                property = profileToMerge.getNestedProperty("properties." + propertyName);
+
+            logger.debug("--ST-- property: " + property);
             if (property == null) {
                 continue;
             }
@@ -69,10 +91,18 @@ public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyEx
             }
 
         }
+
+        logger.debug("--ST-- targetPropertyValue: " + targetPropertyValue);
+        logger.debug("--ST-- final result: " + result);
+
         if (targetPropertyValue == null || !targetPropertyValue.equals(result)) {
-            targetProfile.setProperty(propertyName, result);
+            logger.debug("--ST-- properties: " + properties);
+            logger.debug("--ST-- SETresult: " + result);
+            logger.debug("--ST-- return: " + true);
+            PropertyHelper.setProperty(properties, propertyName, result, "alwaysSet");
             return true;
         }
+        logger.debug("--ST-- return: " + false);
         return false;
     }
 }
