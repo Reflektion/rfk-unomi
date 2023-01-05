@@ -17,7 +17,6 @@
 
 package org.apache.unomi.services.mergers;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.unomi.api.Profile;
 import org.apache.unomi.api.PropertyMergeStrategyExecutor;
 import org.apache.unomi.api.PropertyType;
@@ -32,10 +31,10 @@ public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyEx
     private static final Logger logger = LoggerFactory.getLogger(AddPropertyMergeStrategyExecutor.class.getName());
 
     public boolean mergeProperty(String propertyName, PropertyType propertyType, List<Profile> profilesToMerge, Profile targetProfile) {
-        logger.debug("--ST-- propertyName: " + propertyName);
-        logger.debug("--ST-- propertyType: " + propertyType);
-        logger.debug("--ST-- profilesToMerge: " + profilesToMerge);
-        logger.debug("--ST-- targetProfile: " + targetProfile);
+        logger.debug("propertyName: " + propertyName);
+        logger.debug("propertyType: " + propertyType);
+        logger.debug("profilesToMerge: " + profilesToMerge);
+        logger.debug("targetProfile: " + targetProfile);
 
         Object targetPropertyValue = targetProfile.getNestedProperty(propertyName);
         if (targetPropertyValue == null)
@@ -43,7 +42,7 @@ public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyEx
 
         Object result = targetPropertyValue;
         Map<String, Object> properties = targetProfile.getProperties();
-        logger.debug("--ST-- result: " + result);
+        logger.debug("result: " + result);
 
         if (result == null) {
             if (propertyType.getValueTypeId() != null) {
@@ -69,7 +68,7 @@ public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyEx
             if (targetPropertyValue == null)
                 property = profileToMerge.getNestedProperty("properties." + propertyName);
 
-            logger.debug("--ST-- property: " + property);
+            logger.debug("property: " + property);
             if (property == null) {
                 continue;
             }
@@ -92,17 +91,15 @@ public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyEx
 
         }
 
-        logger.debug("--ST-- targetPropertyValue: " + targetPropertyValue);
-        logger.debug("--ST-- final result: " + result);
+        logger.debug("targetPropertyValue: " + targetPropertyValue);
+        logger.debug("final result: " + result);
 
         if (targetPropertyValue == null || !targetPropertyValue.equals(result)) {
-            logger.debug("--ST-- properties: " + properties);
-            logger.debug("--ST-- SETresult: " + result);
-            logger.debug("--ST-- return: " + true);
+            logger.debug("properties: " + properties);
+            logger.debug("final result: " + result);
             PropertyHelper.setProperty(properties, propertyName, result, "alwaysSet");
             return true;
         }
-        logger.debug("--ST-- return: " + false);
         return false;
     }
 }
