@@ -20,13 +20,20 @@ package org.apache.unomi.services.mergers;
 import org.apache.unomi.api.Profile;
 import org.apache.unomi.api.PropertyMergeStrategyExecutor;
 import org.apache.unomi.api.PropertyType;
+import org.apache.unomi.persistence.spi.PropertyHelper;
 
 import java.util.List;
+import java.util.Map;
 
 public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyExecutor {
     public boolean mergeProperty(String propertyName, PropertyType propertyType, List<Profile> profilesToMerge, Profile targetProfile) {
-        Object targetPropertyValue = targetProfile.getProperty(propertyName);
+        Object targetPropertyValue = targetProfile.getNestedProperty(propertyName);
+        if (targetPropertyValue == null)
+            targetPropertyValue = targetProfile.getNestedProperty("properties." + propertyName);
+
         Object result = targetPropertyValue;
+        Map<String, Object> properties = targetProfile.getProperties();
+
         if (result == null) {
             if (propertyType.getValueTypeId() != null) {
                 if (propertyType.getValueTypeId().equals("integer")) {
@@ -47,7 +54,10 @@ public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyEx
 
         for (Profile profileToMerge : profilesToMerge) {
 
-            Object property = profileToMerge.getProperty(propertyName);
+            Object property = profileToMerge.getNestedProperty(propertyName);
+            if (targetPropertyValue == null)
+                property = profileToMerge.getNestedProperty("properties." + propertyName);
+
             if (property == null) {
                 continue;
             }
@@ -69,8 +79,9 @@ public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyEx
             }
 
         }
+
         if (targetPropertyValue == null || !targetPropertyValue.equals(result)) {
-            targetProfile.setProperty(propertyName, result);
+            PropertyHelper.setProperty(properties, propertyName, result, "alwaysSet");
             return true;
         }
         return false;
