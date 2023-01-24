@@ -18,6 +18,10 @@
 [![Build Status](https://builds.apache.org/job/unomi-master/badge/icon)](https://builds.apache.org/job/unomi-master/)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.unomi/unomi-root/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.apache.unomi/unomi-root)
 
+⚠️  Note
+============ 
+> Base branch for unomi changes is `rfk-unomi-v2.1`.  
+> Please merge all the changes to `rfk-unomi-v2.1` branch only 
 
 Apache Unomi
 ============
