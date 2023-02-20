@@ -55,8 +55,6 @@ public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyEx
             }
         }
 
-        Object init_result = result;
-
         for (Profile profileToMerge : profilesToMerge) {
 
             Object property = profileToMerge.getNestedProperty(propertyName);
@@ -84,19 +82,12 @@ public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyEx
                     result = (Long) result + Long.parseLong(property.toString());
                 }
             }catch (Exception e) {
-                logger.error("---- (ST Custom Info) (AddPropertyMergeStrategyExecutor) "
-                        + ";\n propertyName: " + propertyName
-                        + ";\n propertyType: " + propertyType
-                        + ";\n targetProfile: " + targetProfile
-                        + ";\n init_result: " + init_result
-                        + ";\n profilesToMerge: " + profilesToMerge
-                        + ";\n property : " + property
-                        + ";\n profileToMerge : " + profileToMerge
-                        + ";\n propertyType.getValueTypeId() : " + propertyType.getValueTypeId()
-                        + ";\n (property instanceof Integer) : " + (property instanceof Integer)
-                        + ";\n (property instanceof Long) : " + (property instanceof Long)
-                        + ";\n (property instanceof Double) : " + (property instanceof Double)
-                        + ";\n (property instanceof Float) : " + (property instanceof Float)
+                logger.error("An Error occurred in AddPropertyMergeStrategyExecutor for: "
+                        + "{ propertyName: " + propertyName
+                        + ", targetProfile: " + targetProfile.getItemId()
+                        + ", profileToMerge : " + profileToMerge.getItemId()
+                        + ", propertyType.getValueTypeId() : " + propertyType.getValueTypeId()
+                        + "}"
                 );
                 throw e;
             }
