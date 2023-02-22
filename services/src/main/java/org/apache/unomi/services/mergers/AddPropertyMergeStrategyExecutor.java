@@ -21,11 +21,14 @@ import org.apache.unomi.api.Profile;
 import org.apache.unomi.api.PropertyMergeStrategyExecutor;
 import org.apache.unomi.api.PropertyType;
 import org.apache.unomi.persistence.spi.PropertyHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
 
 public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyExecutor {
+    private static final Logger logger = LoggerFactory.getLogger(AddPropertyMergeStrategyExecutor.class.getName());
     public boolean mergeProperty(String propertyName, PropertyType propertyType, List<Profile> profilesToMerge, Profile targetProfile) {
         Object targetPropertyValue = targetProfile.getNestedProperty(propertyName);
         if (targetPropertyValue == null)
@@ -62,22 +65,32 @@ public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyEx
                 continue;
             }
 
-            if (propertyType != null) {
-                if (propertyType.getValueTypeId().equals("integer") || (property instanceof Integer)) {
-                    result = (Integer) result + (Integer) property;
-                } else if (propertyType.getValueTypeId().equals("long") || (property instanceof Long)) {
-                    result = (Long) result + (Long) property;
-                } else if (propertyType.getValueTypeId().equals("double") || (property instanceof Double)) {
-                    result = (Double) result + (Double) property;
-                } else if (propertyType.getValueTypeId().equals("float") || (property instanceof Float)) {
-                    result = (Float) result + (Float) property;
+            try {
+                if (propertyType != null) {
+                    if (propertyType.getValueTypeId().equals("integer") || (property instanceof Integer)) {
+                        result = (Integer) result + (Integer) property;
+                    } else if (propertyType.getValueTypeId().equals("long") || (property instanceof Long)) {
+                        result = (Long) result + (Long) property;
+                    } else if (propertyType.getValueTypeId().equals("double") || (property instanceof Double)) {
+                        result = (Double) result + (Double) property;
+                    } else if (propertyType.getValueTypeId().equals("float") || (property instanceof Float)) {
+                        result = (Float) result + (Float) property;
+                    } else {
+                        result = (Long) result + Long.parseLong(property.toString());
+                    }
                 } else {
                     result = (Long) result + Long.parseLong(property.toString());
                 }
-            } else {
-                result = (Long) result + Long.parseLong(property.toString());
+            }catch (Exception e) {
+                logger.error("An Error occurred in AddPropertyMergeStrategyExecutor for: "
+                        + "{ propertyName: " + propertyName
+                        + ", targetProfile: " + targetProfile.getItemId()
+                        + ", profileToMerge : " + profileToMerge.getItemId()
+                        + ", propertyType.getValueTypeId() : " + propertyType.getValueTypeId()
+                        + "}"
+                );
+                throw e;
             }
-
         }
 
         if (targetPropertyValue == null || !targetPropertyValue.equals(result)) {
