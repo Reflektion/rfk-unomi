@@ -250,9 +250,11 @@ public class SegmentServiceImpl extends AbstractServiceImpl implements SegmentSe
     }
 
     private List<Segment> getAllSegmentDefinitions() {
+        logger.info("Invoked getAllSegmentDefinitions iterating over Segments List:");
         List<Segment> allItems = persistenceService.getAllItems(Segment.class);
         for (Segment segment : allItems) {
             if (segment.getMetadata().isEnabled()) {
+                logger.info("Segment ID: " + segment.getItemId());
                 ParserHelper.resolveConditionType(definitionsService, segment.getCondition(), "segment " + segment.getItemId());
             }
         }
@@ -280,6 +282,18 @@ public class SegmentServiceImpl extends AbstractServiceImpl implements SegmentSe
 
         // make sure we update the name and description metadata that might not match, so first we remove the entry from the map
         persistenceService.save(segment, null, true);
+
+        try {
+            Thread.sleep(1000);
+        } catch (Exception e) {
+
+        }
+
+//        this.allSegments.add(segment);
+        logger.info("setSegmentDefinition: Segments List: ");
+        for (Segment s: this.allSegments) {
+            logger.info(s.getItemId() + "\n");
+        }
         updateExistingProfilesForSegment(segment);
     }
 
@@ -474,12 +488,20 @@ public class SegmentServiceImpl extends AbstractServiceImpl implements SegmentSe
         Set<String> segments = new HashSet<String>();
         Map<String, Integer> scores = new HashMap<String, Integer>();
 
+        logger.info("in getSegmentsAndScoresForProfile");
         List<Segment> allSegments = this.allSegments;
+        logger.info("getSegmentsAndScoresForProfile: Segments List: ");
+        for (Segment s: allSegments) {
+            logger.info(s.getItemId() + "\n");
+        }
+
         for (Segment segment : allSegments) {
             if (segment.getMetadata().isEnabled() && persistenceService.testMatch(segment.getCondition(), profile)) {
                 segments.add(segment.getMetadata().getId());
             }
         }
+        logger.info("evaluated Segments for profile: " + segments);
+        logger.info("end of getSegmentsAndScoresForProfile");
 
         List<Scoring> allScoring = this.allScoring;
         Map<String, Integer> scoreModifiers = (Map<String, Integer>) profile.getSystemProperties().get("scoreModifiers");
@@ -1087,6 +1109,10 @@ public class SegmentServiceImpl extends AbstractServiceImpl implements SegmentSe
         long updatedProfileCount = 0;
         PartialList<Profile> profiles = persistenceService.query(profilesToUpdateCondition, null, Profile.class, 0, segmentUpdateBatchSize, "10m");
 
+        // TODO: Change made here! Moved this up so that the evaluateSegments function get the unupdated profile segments
+        if (sendProfileUpdateEvent)
+            sendProfileUpdatedEvent(profiles.getList());
+
         while (profiles != null && profiles.getList().size() > 0) {
             long startTime = System.currentTimeMillis();
             if (batchSegmentProfileUpdate) {
@@ -1097,8 +1123,6 @@ public class SegmentServiceImpl extends AbstractServiceImpl implements SegmentSe
                     persistenceService.update(profileToUpdate, null, Profile.class, sourceMap);
                 }
             }
-            if (sendProfileUpdateEvent)
-                sendProfileUpdatedEvent(profiles.getList());
 
             updatedProfileCount += profiles.size();
             logger.info("{} profiles {} to segment {} in {}ms", profiles.size(), isAdd ? "added" : "removed", segmentId, System.currentTimeMillis() - startTime);
@@ -1140,6 +1164,8 @@ public class SegmentServiceImpl extends AbstractServiceImpl implements SegmentSe
 
     private void sendProfileUpdatedEvent(List<Profile> profiles) {
         for (Profile profileToAdd : profiles) {
+            logger.info("sendProfileUpdatedEvent: Sending profile Updated Event for itemId :" + profileToAdd.getItemId());
+            logger.info("sendProfileUpdatedEvent: Segments for User :" + profileToAdd.getSegments() + "\n");
             sendProfileUpdatedEvent(profileToAdd);
         }
     }
@@ -1158,6 +1184,7 @@ public class SegmentServiceImpl extends AbstractServiceImpl implements SegmentSe
 
         Map<String, Object> sourceMap = new HashMap<>();
         sourceMap.put("segments", profile.getSegments());
+        logger.info("buildPropertiesMapForUpdateSegment: Updating Segments for profile in buildPropertiesMapForUpdateSegment: " + profile.getSegments().toString() + "\n");
         profile.setSystemProperty("lastUpdated", new Date());
         sourceMap.put("systemProperties", profile.getSystemProperties());
         return sourceMap;
