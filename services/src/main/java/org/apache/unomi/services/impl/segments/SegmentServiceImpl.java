@@ -280,7 +280,7 @@ public class SegmentServiceImpl extends AbstractServiceImpl implements SegmentSe
 
         // make sure we update the name and description metadata that might not match, so first we remove the entry from the map
         persistenceService.save(segment, null, true);
-        updateExistingProfilesForSegment(segment);
+//        updateExistingProfilesForSegment(segment);
     }
 
     private boolean checkSegmentDeletionImpact(Condition condition, String segmentToDeleteId) {
@@ -391,7 +391,7 @@ public class SegmentServiceImpl extends AbstractServiceImpl implements SegmentSe
             segmentCondition.setParameter("propertyName", "segments");
             segmentCondition.setParameter("comparisonOperator", "equals");
             segmentCondition.setParameter("propertyValue", segmentId);
-            updateProfilesSegment(segmentCondition, segmentId, false, false);
+//            updateProfilesSegment(segmentCondition, segmentId, false, false);
 
             // update impacted segments
             for (Segment segment : impactedSegments) {
