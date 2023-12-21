@@ -28,11 +28,11 @@ Deployment Steps
 - Create a feature branch. Make changes raise PR.
 - Merge PR with `rfk-unomi-v2.1` branch.
 - Switch to `rfk-unomi-v2.1` branch and run `mvn package` or `mvn package -DskipTests`
-- This build the jar under `package/target` directory
-- Take backup of the jar present in s3 path `s3://rfk-repo/packages/rfk-data-unomi/` to `s3://rfk-repo/packages/rfk-data-unomi/unomi-2.0.0_bkp`
-- Copy the jar `unomi-2.0.0.tar.gz` to s3 path `s3://rfk-repo/packages/rfk-data-unomi/`.
+- This build the binary under `package/target` directory
+- Take backup of the binary present in s3 path `s3://rfk-repo/packages/rfk-data-unomi/` to `s3://rfk-repo/packages/rfk-data-unomi/unomi-2.0.0_bkp`
+- Copy the binary `unomi-2.0.0.tar.gz` to s3 path `s3://rfk-repo/packages/rfk-data-unomi/`.
 
-Note: This jar will be pulled by `rfk-data-unomi` repo [here](https://github.com/Reflektion/rfk-data-unomi/blob/main/Dockerfile#L36) while creating unomi image.
+Note: This binary will be pulled by `rfk-data-unomi` repo [here](https://github.com/Reflektion/rfk-data-unomi/blob/main/Dockerfile#L36) while creating unomi image.
 
 Apache Unomi
 ============
