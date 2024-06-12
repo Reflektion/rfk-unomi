@@ -20,13 +20,23 @@ package org.apache.unomi.services.mergers;
 import org.apache.unomi.api.Profile;
 import org.apache.unomi.api.PropertyMergeStrategyExecutor;
 import org.apache.unomi.api.PropertyType;
+import org.apache.unomi.persistence.spi.PropertyHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyExecutor {
+    private static final Logger logger = LoggerFactory.getLogger(AddPropertyMergeStrategyExecutor.class.getName());
     public boolean mergeProperty(String propertyName, PropertyType propertyType, List<Profile> profilesToMerge, Profile targetProfile) {
-        Object targetPropertyValue = targetProfile.getProperty(propertyName);
+        Object targetPropertyValue = targetProfile.getNestedProperty(propertyName);
+        if (targetPropertyValue == null)
+            targetPropertyValue = targetProfile.getNestedProperty("properties." + propertyName);
+
         Object result = targetPropertyValue;
+        Map<String, Object> properties = targetProfile.getProperties();
+
         if (result == null) {
             if (propertyType.getValueTypeId() != null) {
                 if (propertyType.getValueTypeId().equals("integer")) {
@@ -47,30 +57,44 @@ public class AddPropertyMergeStrategyExecutor implements PropertyMergeStrategyEx
 
         for (Profile profileToMerge : profilesToMerge) {
 
-            Object property = profileToMerge.getProperty(propertyName);
+            Object property = profileToMerge.getNestedProperty(propertyName);
+            if (targetPropertyValue == null)
+                property = profileToMerge.getNestedProperty("properties." + propertyName);
+
             if (property == null) {
                 continue;
             }
 
-            if (propertyType != null) {
-                if (propertyType.getValueTypeId().equals("integer") || (property instanceof Integer)) {
-                    result = (Integer) result + (Integer) property;
-                } else if (propertyType.getValueTypeId().equals("long") || (property instanceof Long)) {
-                    result = (Long) result + (Long) property;
-                } else if (propertyType.getValueTypeId().equals("double") || (property instanceof Double)) {
-                    result = (Double) result + (Double) property;
-                } else if (propertyType.getValueTypeId().equals("float") || (property instanceof Float)) {
-                    result = (Float) result + (Float) property;
+            try {
+                if (propertyType != null) {
+                    if (propertyType.getValueTypeId().equals("integer") || (property instanceof Integer)) {
+                        result = (Integer) result + (Integer) property;
+                    } else if (propertyType.getValueTypeId().equals("long") || (property instanceof Long)) {
+                        result = (Long) result + (Long) property;
+                    } else if (propertyType.getValueTypeId().equals("double") || (property instanceof Double)) {
+                        result = (Double) result + (Double) property;
+                    } else if (propertyType.getValueTypeId().equals("float") || (property instanceof Float)) {
+                        result = (Float) result + (Float) property;
+                    } else {
+                        result = (Long) result + Long.parseLong(property.toString());
+                    }
                 } else {
                     result = (Long) result + Long.parseLong(property.toString());
                 }
-            } else {
-                result = (Long) result + Long.parseLong(property.toString());
+            }catch (Exception e) {
+                logger.error("An Error occurred in AddPropertyMergeStrategyExecutor for: "
+                        + "{ propertyName: " + propertyName
+                        + ", targetProfile: " + targetProfile.getItemId()
+                        + ", profileToMerge : " + profileToMerge.getItemId()
+                        + ", propertyType.getValueTypeId() : " + propertyType.getValueTypeId()
+                        + "}"
+                );
+                throw e;
             }
-
         }
+
         if (targetPropertyValue == null || !targetPropertyValue.equals(result)) {
-            targetProfile.setProperty(propertyName, result);
+            PropertyHelper.setProperty(properties, propertyName, result, "alwaysSet");
             return true;
         }
         return false;

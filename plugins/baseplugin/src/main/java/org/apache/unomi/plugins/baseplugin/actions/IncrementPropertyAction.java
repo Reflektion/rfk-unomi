@@ -16,6 +16,7 @@
  */
 package org.apache.unomi.plugins.baseplugin.actions;
 
+import org.apache.commons.beanutils.NestedNullException;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.unomi.api.*;
@@ -65,6 +66,16 @@ public class IncrementPropertyAction implements ActionExecutor {
         return EventService.NO_CHANGE;
     }
 
+    public static Object getNestedPropertyIfExists(Object bean, String name)
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException{
+        try {
+            return PropertyUtils.getNestedProperty(bean, name);
+        } catch (NestedNullException e) {
+            // Do nothing
+        }
+        return null;
+    }
+
     private Object getPropertyValue(Action action, Event event, String propertyName, Map<String, Object> properties)
             throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         String propertyTarget = (String) action.getParameterValues().get("propertyTarget");
@@ -93,7 +104,7 @@ public class IncrementPropertyAction implements ActionExecutor {
                 }
             } else if (propertyTargetValue instanceof Map) {
                 if (properties.containsKey(rootPropertyName)) {
-                    Object nestedPropertyValue = PropertyUtils.getNestedProperty(properties, propertyName);
+                    Object nestedPropertyValue = getNestedPropertyIfExists(properties, propertyName);
                     if (nestedPropertyValue == null) {
                         propertyValue = propertyTargetValue;
                     } else if (nestedPropertyValue instanceof Map) {
@@ -125,7 +136,7 @@ public class IncrementPropertyAction implements ActionExecutor {
             }
         } else {
             if (properties.containsKey(rootPropertyName)) {
-                Object nestedPropertyValue = PropertyUtils.getNestedProperty(properties, propertyName);
+                Object nestedPropertyValue = getNestedPropertyIfExists(properties, propertyName);
                 if (nestedPropertyValue == null) {
                     propertyValue = 1;
                 } else if (nestedPropertyValue instanceof Integer) {

@@ -18,6 +18,21 @@
 [![Build Status](https://builds.apache.org/job/unomi-master/badge/icon)](https://builds.apache.org/job/unomi-master/)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.unomi/unomi-root/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.apache.unomi/unomi-root)
 
+⚠️  Note
+============ 
+> Base branch for unomi changes is `rfk-unomi-v2.1`.  
+> Please merge all the changes to `rfk-unomi-v2.1` branch only 
+
+Deployment Steps
+============
+- Create a feature branch. Make changes raise PR.
+- Merge PR with `rfk-unomi-v2.1` branch.
+- Switch to `rfk-unomi-v2.1` branch and run `mvn package` or `mvn package -DskipTests`
+- This build the binary under `package/target` directory
+- Take backup of the binary present in s3 path `s3://rfk-repo/packages/rfk-data-unomi/` to `s3://rfk-repo/packages/rfk-data-unomi/unomi-2.0.0_bkp`
+- Copy the binary `unomi-2.0.0.tar.gz` to s3 path `s3://rfk-repo/packages/rfk-data-unomi/`.
+
+Note: This binary will be pulled by `rfk-data-unomi` repo [here](https://github.com/Reflektion/rfk-data-unomi/blob/main/Dockerfile#L36) while creating unomi image.
 
 Apache Unomi
 ============

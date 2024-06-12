@@ -280,7 +280,9 @@ public class SegmentServiceImpl extends AbstractServiceImpl implements SegmentSe
 
         // make sure we update the name and description metadata that might not match, so first we remove the entry from the map
         persistenceService.save(segment, null, true);
-        updateExistingProfilesForSegment(segment);
+        // NOTE: Removing the updating the profiles. The profile will be updated with the modified segment list once
+        // the user becomes active.
+//        updateExistingProfilesForSegment(segment);
     }
 
     private boolean checkSegmentDeletionImpact(Condition condition, String segmentToDeleteId) {
@@ -391,7 +393,9 @@ public class SegmentServiceImpl extends AbstractServiceImpl implements SegmentSe
             segmentCondition.setParameter("propertyName", "segments");
             segmentCondition.setParameter("comparisonOperator", "equals");
             segmentCondition.setParameter("propertyValue", segmentId);
-            updateProfilesSegment(segmentCondition, segmentId, false, false);
+            // NOTE: Removing the updating the profiles. The profile will be updated with the modified segment list once
+            // the user becomes active.
+//            updateProfilesSegment(segmentCondition, segmentId, false, false);
 
             // update impacted segments
             for (Segment segment : impactedSegments) {
@@ -974,7 +978,9 @@ public class SegmentServiceImpl extends AbstractServiceImpl implements SegmentSe
                 Segment linkedSegment = getSegmentDefinition(linkedItem);
                 if (linkedSegment != null) {
                     logger.info("Start segment recalculation for segment: {} - {}", linkedSegment.getItemId(), linkedSegment.getMetadata().getName());
-                    updateExistingProfilesForSegment(linkedSegment);
+                    // NOTE: Removing the updating the profiles. The profile will be updated with the modified segment list once
+                    // the user becomes active.
+//                    updateExistingProfilesForSegment(linkedSegment);
                     continue;
                 }
 
